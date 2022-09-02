@@ -31,40 +31,33 @@ main ( int argc, char *argv[] )
 
   while (getchar() != EOF) { }
 
-  FILE *tty = fopen("/dev/tty", "rw");
+  FILE *tty = fopen("/dev/tty", "r+");
   if (!tty)
     exit_error("Error, could not open file");
 
   // prints the output
   for (int i = 0; i < number_lines; i++) {
-    fprintf(stderr, "%d: %s\n", i + 1, lines[i]);
+    fprintf(tty, "%d: %s\n", i + 1, lines[i]);
   }
-  fprintf(stderr, "%d: Exit\n", number_lines + 1);
-
+  fprintf(tty, "%d: Exit\n", number_lines + 1);
 
   int choice = 0;
-  char answer[16];
+  char buf[16];
   do {
     // gets the answer from user
     if (argc > 1) {
-      fprintf(stderr, "%s (1-%d): ", argv[1], number_lines + 1);
+      fprintf(tty, "%s (1-%d): ", argv[1], number_lines + 1);
     } else {
-      fprintf(stderr, "Enter your choice (1-%d): ", number_lines + 1);
+      fprintf(tty, "Enter your choice (1-%d): ", number_lines + 1);
     }
-    fgets(answer, 15, tty);
-    choice = atoi(answer);
+    fgets(buf, 15, tty);
+    choice = atoi(buf);
   } while (choice < 1 || choice > number_lines + 1);
 
-  if (choice == number_lines + 1)
-    exit(EXIT_SUCCESS);
-
-  printf("%s\n", lines[choice - 1]);
-
+  if (choice != number_lines + 1)
+    printf("%s\n", lines[choice - 1]);
 
   fclose(tty);
-
-
-  exit(0);
 }
 
 /*
@@ -121,6 +114,10 @@ copy_file_to_lines ( FILE *file, char ***lines, size_t *number_lines )
   }
 }
 
+/*
+ * @brief Prints an error message before exiting the program
+ * @param message The message to print
+ */
 void
 exit_error ( char *message )
 {
